@@ -45,11 +45,13 @@ drawable_image = cv2.imread("/home/nickolas/Imagens/cilia.jpg", 1)
 
  # Linhas:
 table_rows = []
+table_rows_contours = []
 for curr_contour in contours:
     x,y,w,h = cv2.boundingRect(curr_contour)
     if w*h <= 300000:
         table_row = table[y:y+h, x:x+w]
         table_rows.append(table_row)
+        table_rows_contours.append(curr_contour)
 
 # Transforma as linhas (já binarizadas) em uma imagem que se assemelha a um código de barras
 # para determinar se ela é ou não uma linha de interesse
@@ -63,8 +65,19 @@ for (i, table_row) in enumerate(table_rows):
         treated_rows.append(m_tab_r)
 
 # Varre todas as linhas da tabela e mostra se é ou não uma linha de interesse
-for (i,row) in enumerate(treated_rows):
+# for (i,row) in enumerate(treated_rows):
+#     row_t = cv2.resize(row, (500, 10), interpolation = cv2.INTER_NEAREST)
+#     print("Linha nº %d %s" % (i, "é uma linha de interesse" if is_row_of_interest(row_t) else "NÃO é uma linha de interesse"))
+
+# Desenha
+drawable_image = cv2.imread("/home/nickolas/Imagens/cilia.jpg", 1)
+for (i, row) in enumerate(treated_rows):
     row_t = cv2.resize(row, (500, 10), interpolation = cv2.INTER_NEAREST)
-    print("Linha nº %d %s" % (i, "é uma linha de interesse" if is_row_of_interest(row_t) else "NÃO é uma linha de interesse"))
+    _contour_ = table_rows_contours[i]
+    x,y,w,h = cv2.boundingRect(_contour_)
+    drawable_image = cv2.rectangle(drawable_image, (x,y+750), (x+w,y+750+h), (0,255,0) if is_row_of_interest(row_t) else (0,0,255), 7)
+
+shw(drawable_image)
+
 
 

@@ -16,6 +16,7 @@ def is_row_of_interest(image):
     for x in zip(x_list, x_expected):
         color_at_x = image[0][x[0]]
         if (color_at_x != x[1]):
+            # print("Color at %d is not %d" % (x[0], x[1]))
             return False
 
     return True
