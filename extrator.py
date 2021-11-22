@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-image = cv2.imread("/media/nickolas/8A5C50BF5C50A829/cilia.jpg", 0)
+from aux import is_row_of_interest
+
+image = cv2.imread("/home/nickolas/Imagens/cilia.jpg", 0)
 
 def shw(img):
     plt.title('Imagem')
@@ -39,21 +41,30 @@ cbon = cv2.erode(cbon, cv2.getStructuringElement(cv2.MORPH_RECT, (table.shape[1]
 
 contours, _ = cv2.findContours(cbon, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-drawable_image = cv2.imread("/media/nickolas/8A5C50BF5C50A829/cilia.jpg", 1)
+drawable_image = cv2.imread("/home/nickolas/Imagens/cilia.jpg", 1)
 
  # Linhas:
 table_rows = []
-for i in range(len(contours)):
-    curr_contour = contours[i]
+for curr_contour in contours:
     x,y,w,h = cv2.boundingRect(curr_contour)
     if w*h <= 300000:
         table_row = table[y:y+h, x:x+w]
+        table_rows.append(table_row)
 
+# Transforma as linhas (já binarizadas) em uma imagem que se assemelha a um código de barras
+# para determinar se ela é ou não uma linha de interesse
+treated_rows = []
+for (i, table_row) in enumerate(table_rows):
         _, thresh_table = cv2.threshold(table_row, 190, 255, cv2.THRESH_BINARY_INV)
         dilated_table_row = cv2.dilate(thresh_table, cv2.getStructuringElement(cv2.MORPH_RECT, (h//4, w//4)))
         m_tab_r = cv2.blur(dilated_table_row, (5,5), 0)
+        _, m_tab_r = cv2.threshold(m_tab_r, 20, 255, cv2.THRESH_BINARY)
 
-        cv2.imshow("Linha", m_tab_r)
-        cv2.waitKey(1000)
+        treated_rows.append(m_tab_r)
 
-        table_rows.append(table_row)
+# Varre todas as linhas da tabela e mostra se é ou não uma linha de interesse
+for (i,row) in enumerate(treated_rows):
+    row_t = cv2.resize(row, (500, 10), interpolation = cv2.INTER_NEAREST)
+    print("Linha nº %d %s" % (i, "é uma linha de interesse" if is_row_of_interest(row_t) else "NÃO é uma linha de interesse"))
+
+
